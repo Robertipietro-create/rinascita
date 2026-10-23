@@ -1,0 +1,32 @@
+# Pubblica la web app (installabile dalla Home dell'iPhone) su GitHub Pages a ogni push su main.
+name: Web app
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepara il sito
+        run: |
+          mkdir _site
+          cp -R index.html manifest.webmanifest sw.js css js icons _site/
+          rm -f _site/icons/icon-1024.png
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

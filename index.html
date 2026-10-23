@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#2b2633">
+  <title>Rinascita</title>
+  <meta name="apple-mobile-web-app-title" content="Rinascita">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="hud">
+    <div id="topbar" class="hidden">
+      <div id="phase">
+        <span id="phase-name">—</span>
+        <span id="phase-dots"></span>
+      </div>
+      <div id="progress" class="hidden">
+        <div id="progress-fill"></div>
+        <i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div id="top-buttons">
+        <button id="btn-journal" class="round" aria-label="Diario"><img alt=""></button>
+        <button id="btn-mute" class="round" aria-label="Audio">♪</button>
+      </div>
+    </div>
+
+    <div id="tasks" class="hidden"></div>
+    <div id="toolbar" class="hidden"></div>
+    <div id="sheet" class="hidden"></div>
+    <button id="btn-next" class="hidden">Avanti</button>
+    <div id="float-btns" class="hidden">
+      <button id="btn-rotate" class="round" aria-label="Ruota">⟳</button>
+      <button id="btn-remove" class="round" aria-label="Rimuovi">✕</button>
+    </div>
+    <div id="thought" class="hidden"></div>
+    <div id="toast"></div>
+    <div id="card" class="hidden"><div class="card-kicker"></div><div class="card-title"></div><div class="card-sub"></div></div>
+    <div id="modal" class="hidden"><div class="modal-box"></div></div>
+  </div>
+
+  <div id="title-screen">
+    <canvas id="title-bg"></canvas>
+    <div class="title-inner">
+      <div class="title-word">Rinascita</div>
+      <div class="title-sub">luoghi dimenticati, rimessi al mondo</div>
+      <div id="loading"><div id="loading-fill"></div></div>
+      <button id="btn-start" class="hidden">Tocca per iniziare</button>
+    </div>
+  </div>
+
+  <!-- ordine di caricamento: script classici, funzionano anche da file:// -->
+  <script src="js/core/util.js"></script>
+  <script src="js/core/engine.js"></script>
+  <script src="js/audio/audio.js"></script>
+  <script src="js/render/iso.js"></script>
+  <script src="js/render/textures.js"></script>
+  <script src="js/render/particles.js"></script>
+  <script src="js/render/scene.js"></script>
+  <script src="js/game/surface.js"></script>
+  <script src="js/game/objects.js"></script>
+  <script src="js/game/people.js"></script>
+  <script src="js/game/room.js"></script>
+  <script src="js/game/tools.js"></script>
+  <script src="js/ui/icons.js"></script>
+  <script src="js/ui/ui.js"></script>
+  <script src="js/game/story.js"></script>
+  <script src="js/save/save.js"></script>
+  <script src="js/levels/salotto.js"></script>
+  <script src="js/phases/discovery.js"></script>
+  <script src="js/phases/clearing.js"></script>
+  <script src="js/phases/cleaning.js"></script>
+  <script src="js/phases/repair.js"></script>
+  <script src="js/phases/build.js"></script>
+  <script src="js/phases/decor.js"></script>
+  <script src="js/phases/reveal.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // offline: il service worker funziona solo via http(s), non aprendo il file con doppio clic
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

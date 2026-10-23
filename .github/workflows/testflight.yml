@@ -1,0 +1,69 @@
+# Compila l'app iOS su un Mac di GitHub e la carica su TestFlight.
+# Si avvia a mano: GitHub → Actions → "TestFlight" → Run workflow.
+# Segreti richiesti (Settings → Secrets and variables → Actions):
+#   APPLE_TEAM_ID   ID del team Apple Developer (10 caratteri)
+#   ASC_KEY_ID      ID della chiave API di App Store Connect
+#   ASC_ISSUER_ID   Issuer ID delle chiavi API
+#   ASC_KEY_P8      contenuto del file AuthKey_XXXX.p8
+name: TestFlight
+on:
+  workflow_dispatch:
+jobs:
+  ios:
+    runs-on: macos-15
+    env:
+      TEAM: ${{ secrets.APPLE_TEAM_ID }}
+      KEY: ${{ secrets.ASC_KEY_ID }}
+      ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Usa l'Xcode più recente disponibile
+        run: |
+          X=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)
+          sudo xcode-select -s "$X"
+          xcodebuild -version
+
+      - name: Installa XcodeGen
+        run: brew install xcodegen
+
+      - name: Copia il gioco dentro l'app
+        run: |
+          mkdir -p ios/www
+          cp -R index.html css js icons ios/www/
+          rm -f ios/www/icons/icon-1024.png
+
+      - name: Chiave App Store Connect
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$HOME/private_keys"
+          printf '%s\n' "$ASC_KEY_P8" > "$HOME/private_keys/AuthKey_$KEY.p8"
+
+      - name: Genera il progetto Xcode
+        working-directory: ios
+        run: |
+          sed -i '' "s/__TEAM_ID__/$TEAM/" ExportOptions.plist
+          xcodegen generate
+
+      - name: Archivia
+        working-directory: ios
+        run: |
+          xcodebuild archive \
+            -project Rinascita.xcodeproj -scheme Rinascita -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Rinascita.xcarchive \
+            DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$KEY.p8" \
+            -authenticationKeyID "$KEY" -authenticationKeyIssuerID "$ISSUER"
+
+      - name: Carica su TestFlight
+        working-directory: ios
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/Rinascita.xcarchive \
+            -exportOptionsPlist ExportOptions.plist -exportPath build/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_$KEY.p8" \
+            -authenticationKeyID "$KEY" -authenticationKeyIssuerID "$ISSUER"
